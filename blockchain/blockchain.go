@@ -7,6 +7,8 @@ import (
 	"runtime"
 
 	"github.com/dgraph-io/badger"
+
+	"github.com/realjf/blockchain_demo/helper"
 )
 
 const (
@@ -30,7 +32,7 @@ func (chain *BlockChain) AddBlock(transactions []*Transaction) {
 
 	err := chain.Database.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte("lh"))
-		Handle(err)
+		helper.Handle(err)
 		err = item.Value(func(val []byte) error {
 			lastHash = append(lastHash, val...)
 
@@ -40,20 +42,20 @@ func (chain *BlockChain) AddBlock(transactions []*Transaction) {
 		return err
 	})
 
-	Handle(err)
+	helper.Handle(err)
 
 	newBlock := NewBlock(transactions, lastHash)
 
 	err = chain.Database.Update(func(txn *badger.Txn) error {
 		err := txn.Set(newBlock.Hash, newBlock.Serialize())
-		Handle(err)
+		helper.Handle(err)
 		err = txn.Set([]byte("lh"), newBlock.Hash)
 
 		chain.LastHash = newBlock.Hash
 
 		return err
 	})
-	Handle(err)
+	helper.Handle(err)
 
 }
 
@@ -79,14 +81,14 @@ func InitBlockChain(address string) *BlockChain {
 	opts := badger.DefaultOptions(dbPath)
 
 	db, err := badger.Open(opts)
-	Handle(err)
+	helper.Handle(err)
 
 	err = db.Update(func(txn *badger.Txn) error {
 		cbtx := CoinbaseTx(address, genesisData)
 		genesis := Genesis(cbtx)
 		fmt.Println("Genesis created")
 		err = txn.Set(genesis.Hash, genesis.Serialize())
-		Handle(err)
+		helper.Handle(err)
 		err = txn.Set([]byte("lh"), genesis.Hash)
 
 		lastHash = genesis.Hash
@@ -94,7 +96,7 @@ func InitBlockChain(address string) *BlockChain {
 		return err
 	})
 
-	Handle(err)
+	helper.Handle(err)
 	blockchain := BlockChain{
 		LastHash: lastHash,
 		Database: db,
@@ -114,11 +116,11 @@ func ContinueBlockChain(address string) *BlockChain {
 	opts := badger.DefaultOptions(dbPath)
 
 	db, err := badger.Open(opts)
-	Handle(err)
+	helper.Handle(err)
 
 	err = db.Update(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte("lh"))
-		Handle(err)
+		helper.Handle(err)
 		err = item.Value(func(val []byte) error {
 			lastHash = append(lastHash, val...)
 			return nil
@@ -126,7 +128,7 @@ func ContinueBlockChain(address string) *BlockChain {
 
 		return err
 	})
-	Handle(err)
+	helper.Handle(err)
 
 	chain := BlockChain{
 		LastHash: lastHash,
@@ -150,7 +152,7 @@ func (iter *BlockChainIterator) Next() *Block {
 
 	err := iter.Database.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(iter.CurrentHash)
-		Handle(err)
+		helper.Handle(err)
 		var encodedBlock []byte
 		err = item.Value(func(val []byte) error {
 			encodedBlock = append(encodedBlock, val...)
@@ -161,7 +163,7 @@ func (iter *BlockChainIterator) Next() *Block {
 
 		return err
 	})
-	Handle(err)
+	helper.Handle(err)
 
 	iter.CurrentHash = block.PrevHash
 

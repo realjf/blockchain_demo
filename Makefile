@@ -1,4 +1,5 @@
 BIN=bin/blockchain_demo
+WalletFile=tmp/wallets.dat
 
 test:
 	@go test -v ./...
@@ -9,8 +10,11 @@ push:
 
 
 build:
+	@rm -rf ./${BIN}
 	@rm -rf ./tmp && mkdir -p ./tmp/blocks
+	@touch ./${WalletFile}
 	@go build -ldflags='-s -w' -o ${BIN} ./main.go
+	@echo 'done'
 
 
 CMD ?=

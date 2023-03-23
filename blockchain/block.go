@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+
+	"github.com/realjf/blockchain_demo/helper"
 )
 
 type Block struct {
@@ -35,7 +37,7 @@ func (b *Block) Serialize() []byte {
 
 	err := encoder.Encode(b)
 
-	Handle(err)
+	helper.Handle(err)
 
 	return res.Bytes()
 }
@@ -46,7 +48,7 @@ func Deserialize(data []byte) *Block {
 
 	err := decoder.Decode(&block)
 
-	Handle(err)
+	helper.Handle(err)
 
 	return &block
 }

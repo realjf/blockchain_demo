@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+
+	"github.com/realjf/blockchain_demo/helper"
 )
 
 // Take the data from the block
@@ -43,8 +45,8 @@ func (pow *ProofOfWork) InitData(nonce int) []byte {
 		[][]byte{
 			pow.Block.PrevHash,
 			pow.Block.HashTransactions(),
-			ToHex(int64(nonce)),
-			ToHex(int64(Difficulty)),
+			helper.ToHex(int64(nonce)),
+			helper.ToHex(int64(Difficulty)),
 		},
 		[]byte{},
 	)
