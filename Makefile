@@ -9,11 +9,14 @@ push:
 
 
 build:
-	@go build -ldflags='-s -w' -o ${BIN} ./example/main.go
+	@rm -rf ./tmp && mkdir -p ./tmp/blocks
+	@go build -ldflags='-s -w' -o ${BIN} ./main.go
 
-run: build
+
+CMD ?=
+run:
 	@chmod +x ./${BIN}
-	@sudo ./${BIN}
+	@./${BIN} ${CMD}
 
 
 # make tag t=<your_version>
