@@ -50,12 +50,12 @@ func ValidateAddress(address string) bool {
 }
 
 func NewKeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey, []byte) {
-	curve := elliptic.P521()
+	curve := elliptic.P256()
 
 	private, err := ecdsa.GenerateKey(curve, rand.Reader)
 	helper.Handle(err)
 
-	pubKey := elliptic.Marshal(curve, private.PublicKey.X, private.PublicKey.Y)
+	pubKey := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
 	return private, &private.PublicKey, pubKey
 }
 

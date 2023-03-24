@@ -212,7 +212,7 @@ func InitBlockChain(address, nodeId string) *BlockChain {
 	}
 
 	var lastHash []byte
-	opts := badger.DefaultOptions(dbPath)
+	opts := badger.DefaultOptions(path)
 
 	db, err := openDB(path, opts)
 	helper.Handle(err)
@@ -248,7 +248,7 @@ func ContinueBlockChain(nodeId string) *BlockChain {
 
 	var lastHash []byte
 
-	opts := badger.DefaultOptions(dbPath)
+	opts := badger.DefaultOptions(path)
 
 	db, err := openDB(path, opts)
 	helper.Handle(err)

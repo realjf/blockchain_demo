@@ -11,8 +11,8 @@ push:
 
 build:
 	@rm -rf ./${BIN}
-	@rm -rf ./tmp && mkdir -p ./tmp/blocks
-	@touch ./${WalletFile}
+	@rm -rf ./tmp && mkdir -p ./tmp
+# @touch ./${WalletFile}
 	@go build -ldflags='-s -w' -o ${BIN} ./main.go
 	@echo 'done'
 

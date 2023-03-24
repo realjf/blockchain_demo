@@ -44,18 +44,6 @@ func (tx *Transaction) Hash() []byte {
 	return hash[:]
 }
 
-func (tx *Transaction) SetID() {
-	var encoded bytes.Buffer
-	var hash [32]byte
-
-	encode := gob.NewEncoder(&encoded)
-	err := encode.Encode(tx)
-	helper.Handle(err)
-
-	hash = sha256.Sum256(encoded.Bytes())
-	tx.ID = hash[:]
-}
-
 func DeserializeTransaction(data []byte) Transaction {
 	var transaction Transaction
 
@@ -111,13 +99,15 @@ func (tx *Transaction) Sign(privateKey *ecdsa.PrivateKey, prevTXs map[string]Tra
 		prevTX := prevTXs[hex.EncodeToString(in.ID)]
 		txCopy.Inputs[inId].Signature = nil
 		txCopy.Inputs[inId].PubKey = prevTX.Outputs[in.Out].PubKeyHash
-		txCopy.ID = txCopy.Hash()
-		txCopy.Inputs[inId].PubKey = nil
 
-		r, s, err := ecdsa.Sign(rand.Reader, privateKey, txCopy.ID)
+		dataToSign := fmt.Sprintf("%x\n", txCopy)
+
+		r, s, err := ecdsa.Sign(rand.Reader, privateKey, []byte(dataToSign))
 		helper.Handle(err)
 		signature := append(r.Bytes(), s.Bytes()...)
+
 		tx.Inputs[inId].Signature = signature
+		txCopy.Inputs[inId].PubKey = nil
 	}
 }
 
@@ -133,17 +123,16 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 	}
 
 	txCopy := tx.TrimmedCopy()
-	curve := elliptic.P521()
+	curve := elliptic.P256()
 
 	for inId, in := range tx.Inputs {
 		prevTx := prevTXs[hex.EncodeToString(in.ID)]
 		txCopy.Inputs[inId].Signature = nil
 		txCopy.Inputs[inId].PubKey = prevTx.Outputs[in.Out].PubKeyHash
-		txCopy.ID = txCopy.Hash()
-		txCopy.Inputs[inId].PubKey = nil
 
 		r := big.Int{}
 		s := big.Int{}
+
 		sigLen := len(in.Signature)
 		r.SetBytes(in.Signature[:(sigLen / 2)])
 		s.SetBytes(in.Signature[(sigLen / 2):])
@@ -154,10 +143,13 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 		x.SetBytes(in.PubKey[:(keyLen / 2)])
 		y.SetBytes(in.PubKey[(keyLen / 2):])
 
+		dataToVerify := fmt.Sprintf("%x\n", txCopy)
+
 		rawPubKey := ecdsa.PublicKey{Curve: curve, X: &x, Y: &y}
-		if !ecdsa.Verify(&rawPubKey, txCopy.ID, &r, &s) {
+		if !ecdsa.Verify(&rawPubKey, []byte(dataToVerify), &r, &s) {
 			return false
 		}
+		txCopy.Inputs[inId].PubKey = nil
 	}
 
 	return true
@@ -240,7 +232,7 @@ func NewTransaction(w *wallet.Wallet, to string, amount int, UTXO *UTXOSet) *Tra
 		}
 	}
 
-	from := fmt.Sprintf("%s", w.Address())
+	from := string(w.Address())
 
 	outputs = append(outputs, *NewTxOutput(amount, to))
 
