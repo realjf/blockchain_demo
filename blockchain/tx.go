@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"bytes"
+	"encoding/gob"
 
 	"github.com/realjf/blockchain_demo/helper"
 	"github.com/realjf/blockchain_demo/wallet"
@@ -17,6 +18,10 @@ type TxInput struct {
 	Out       int
 	Signature []byte
 	PubKey    []byte
+}
+
+type TxOutputs struct {
+	Outputs []TxOutput
 }
 
 func NewTxOutput(value int, address string) *TxOutput {
@@ -39,4 +44,20 @@ func (out *TxOutput) Lock(address []byte) {
 
 func (out *TxOutput) IsLockedWithKey(pubKeyHash []byte) bool {
 	return bytes.Equal(out.PubKeyHash, pubKeyHash)
+}
+
+func (outs TxOutputs) Serialize() []byte {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(outs)
+	helper.Handle(err)
+	return buffer.Bytes()
+}
+
+func DeserializeOutputs(data []byte) TxOutputs {
+	var outputs TxOutputs
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&outputs)
+	helper.Handle(err)
+	return outputs
 }
