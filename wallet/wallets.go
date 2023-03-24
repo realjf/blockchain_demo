@@ -1,17 +1,17 @@
 package wallet
 
 const (
-	walletFile = "./tmp/wallets.dat"
+	walletFile = "./tmp/wallets_%s.dat"
 )
 
 type Wallets struct {
-	Wallets map[string]*Wallet `json:"wallets"`
+	Wallets map[string]*Wallet
 }
 
-func NewWallets() (*Wallets, error) {
+func NewWallets(nodeId string) (*Wallets, error) {
 	wallets := &Wallets{}
 	wallets.Wallets = make(map[string]*Wallet)
-	err := wallets.LoadFile()
+	err := wallets.LoadFile(nodeId)
 	return wallets, err
 }
 
@@ -40,8 +40,8 @@ func (ws *Wallets) GetWallet(address string) Wallet {
 	return *ws.Wallets[address]
 }
 
-func (ws *Wallets) LoadFile() error {
-	wallets, err := DeserializeWallets()
+func (ws *Wallets) LoadFile(nodeId string) error {
+	wallets, err := DeserializeWallets(nodeId)
 	if err != nil {
 		return err
 	}
@@ -49,6 +49,6 @@ func (ws *Wallets) LoadFile() error {
 	return nil
 }
 
-func (ws *Wallets) SaveFile() {
-	SerializeWallets(ws)
+func (ws *Wallets) SaveFile(nodeId string) {
+	SerializeWallets(ws, nodeId)
 }

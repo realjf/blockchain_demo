@@ -23,7 +23,9 @@ type WalletSerializer struct {
 	Wallets map[string]WalletIterator
 }
 
-func SerializeWallets(wallets *Wallets) {
+func SerializeWallets(wallets *Wallets, nodeId string) {
+	walletFile := fmt.Sprintf(walletFile, nodeId)
+
 	serializer := WalletSerializer{
 		Wallets: map[string]WalletIterator{},
 	}
@@ -48,7 +50,8 @@ func SerializeWallets(wallets *Wallets) {
 	fmt.Println("save wallets file!")
 }
 
-func DeserializeWallets() (*Wallets, error) {
+func DeserializeWallets(nodeId string) (*Wallets, error) {
+	walletFile := fmt.Sprintf(walletFile, nodeId)
 	if _, err := os.Stat(walletFile); os.IsNotExist(err) {
 		return nil, err
 	}
