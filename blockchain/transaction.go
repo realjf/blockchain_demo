@@ -56,9 +56,21 @@ func (tx *Transaction) SetID() {
 	tx.ID = hash[:]
 }
 
+func DeserializeTransaction(data []byte) Transaction {
+	var transaction Transaction
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&transaction)
+	helper.Handle(err)
+	return transaction
+}
+
 func CoinbaseTx(to, data string) *Transaction {
 	if data == "" {
-		data = fmt.Sprintf("Coins to %s", to)
+		randData := make([]byte, 24)
+		_, err := rand.Read(randData)
+		helper.Handle(err)
+		data = fmt.Sprintf("%x", randData)
 	}
 
 	txin := TxInput{
@@ -67,15 +79,14 @@ func CoinbaseTx(to, data string) *Transaction {
 		Signature: nil,
 		PubKey:    []byte(data),
 	}
-	txout := NewTxOutput(100, to)
+	txout := NewTxOutput(20, to)
 
 	tx := Transaction{
 		ID:      nil,
 		Inputs:  []TxInput{txin},
 		Outputs: []TxOutput{*txout},
 	}
-	tx.SetID()
-
+	tx.ID = tx.Hash()
 	return &tx
 }
 

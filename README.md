@@ -77,4 +77,10 @@ Balance of 12E6bMd7VxJXv7dbeWKhKAQ6y2VZvbGzdz: 100
 badger 2023/03/24 17:55:26 INFO: Got compaction priority: {level:0 score:1.73 dropPrefixes:[]}
 
 
+make run CMD='listaddresses'
+
+Hello, world.
+12E6bMd7VxJXv7dbeWKhKAQ6y2VZvbGzdz
+18CsFYnLTdcuLcpwtVHbagseYTcDN7qZLC
+
 ```
